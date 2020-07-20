@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
     name = 'coralinede',
-    version = '0.0.4',
+    version = '0.0.5',
     license='MIT',
     description = 'python library for data engineering',
     author = 'coraline tech',
@@ -10,7 +10,7 @@ setuptools.setup(
     url = 'https://github.com/coralinetech/coralinede', 
     download_url = '', 
     keywords = ['data-engineering', 'pandas', 'python', 'pandas-helper'],
-    packages=setuptools.find_packages(),
+    packages=setuptools.find_packages(include=['coralinede', 'coralinede.*']),
     install_requires=[            
             'sqlalchemy',
             'pandas',

@@ -1,2 +1,2 @@
-from coralinede.auto_detect_df.detect_datatype import DFDetection
-from coralinede.auto_detect_df.pyingest_util import DFDetectionUtils
+from .auto_detect_df.detect_datatype import get_datatype_each_col
+from .auto_detect_df.pyingest_util import get_clean_col_and_delimiter
