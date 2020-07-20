@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
     name = 'coralinede',
-    version = '0.0.5.4',
+    version = '1.0.0',
     license='MIT',
     description = 'python library for data engineering',
     author = 'coraline tech',
