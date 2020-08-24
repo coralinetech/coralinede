@@ -4,13 +4,14 @@ import pandas as pd
 import numpy as np
 from math import ceil
 
+DEFAULT_VARCHAR_LENGTH=100
 
 def get_detected_column_types(df):
     """ Get data type of each columns ('DATETIME', 'NUMERIC' or 'STRING')
-    
+
     Parameters:
         df (df): pandas dataframe
-    
+
     Returns
         df (df): dataframe that all datatypes are converted (df)
     """
@@ -22,6 +23,10 @@ def get_detected_column_types(df):
         col_data = df[c].map(str)
         col_data = col_data.replace("NaT", None)
         col_data = col_data.replace("NaN", None)
+
+        # Check NULL column
+        if(df[c].isnull().values.all()):
+            continue
 
         # Check DATETIME
         try:
@@ -56,7 +61,7 @@ def get_detected_column_types(df):
 
 def get_max_length_columns(df):
     """ find maximum length of value in each column and ceil it
-    
+
     Parameters:
         df (df): dataframe
     Returns
@@ -86,7 +91,7 @@ def get_max_length_columns(df):
 
 def convert_df_datatype_to_sqlalchemy_datatype(df):
     """ convert dataframe's data type into SQLAlchemy's data type
-    
+
     Parameters:
         df (df): dataframe
 
@@ -95,19 +100,24 @@ def convert_df_datatype_to_sqlalchemy_datatype(df):
     """
 
     assert isinstance(df, pd.DataFrame), 'Parameter must be DataFrame'
-    
+
     arr_max_len_columns, arr_max_decimal = get_max_length_columns(df)
 
     dtype_dict = {}
 
     for i, col_name in enumerate(df.columns):
-        if 'bool' in str(df[col_name].dtype):
+        if(df[col_name].isnull().values.all()):
+            dtype_dict[col_name] = sqlalchemy.types.VARCHAR(DEFAULT_VARCHAR_LENGTH)
+        elif 'bool' in str(df[col_name].dtype):
             # Compatible with SQL-Server and MySQL, since MySQL doesn't have BOOLEAN.
             dtype_dict[col_name] = sqlalchemy.types.INTEGER()
         elif 'int' in str(df[col_name].dtype):
             dtype_dict[col_name] = sqlalchemy.types.INTEGER()
         elif 'float' in str(df[col_name].dtype):
-            dtype_dict[col_name] = sqlalchemy.types.DECIMAL(precision=arr_max_len_columns[i], scale=arr_max_decimal[i])
+            if df[col_name].dropna().apply(float.is_integer).all():
+                dtype_dict[col_name] = sqlalchemy.types.INTEGER()
+            else:
+                dtype_dict[col_name] = sqlalchemy.types.DECIMAL(precision=arr_max_len_columns[i], scale=arr_max_decimal[i])
         elif 'datetime' in str(df[col_name].dtype):
             dtype_dict[col_name] = sqlalchemy.types.DateTime()
         elif 'object' in str(df[col_name].dtype):
@@ -124,10 +134,10 @@ def convert_df_datatype_to_sqlalchemy_datatype(df):
 
 def get_datatype_each_col(df):
     """ main function to call sub-function in order to find data type and data length for each column
-    
+
     Parameters:
         df (df): dataframe
-    
+
     Returns:
         dtype_dict (dict): dict of data type of each column in SQLAlchemy standard (dict)
     """
